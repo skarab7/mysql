@@ -93,9 +93,19 @@ end
 node['mysql']['server']['packages'].each do |package_name|
   package package_name do
     action :install
-    notifies :start, "service[mysql]", :immediately
   end
 end
+
+bash "modify apparmor" do
+  code <<-EOH
+    sed -i s,/var/lib/mysql,#{node['mysql']['data_dir']}, /etc/apparmor.d/usr.sbin.mysqld
+  EOH
+end
+
+service "apparmor" do
+  action :reload
+end
+
 
 unless platform_family?(%w{mac_os_x})
 
@@ -199,6 +209,12 @@ unless platform_family?(%w{mac_os_x})
     end
   end
 
+  bash "copy" do
+    code <<-EOH
+      cp -npr /var/lib/mysql/* #{node[:mysql][:data_dir]}
+    EOH
+  end
+
   template "#{node['mysql']['conf_dir']}/my.cnf" do
     source "my.cnf.erb"
     owner "root" unless platform? 'windows'
@@ -213,5 +229,13 @@ unless platform_family?(%w{mac_os_x})
       Chef::Log.info "my.cnf updated but mysql.reload_action is #{node['mysql']['reload_action']}. No action taken."
     end
     variables :skip_federated => skip_federated
+  end
+
+
+
+
+
+  service "mysql" do
+    action :start
   end
 end

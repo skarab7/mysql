@@ -1,7 +1,8 @@
-mysql Cookbook
+mysql Cookbook 
 ==============
-Installs and configures MySQL client or server.
+An ad-hoc hack to make the cookbook work for Ubuntu 12.04 when the data_dir is modified. The changes include: updating apparmor profile and moving all the data from /var/lib/mysql to data_dir. )
 
+Installs and configures MySQL client or server.
 
 Requirements
 ------------
